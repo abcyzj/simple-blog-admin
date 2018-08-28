@@ -72,6 +72,14 @@ const routerOption: RouterOptions = {
         hidden: true,
       },
     },
+    {
+      path: '*',
+      component: () => import('@/views/404.vue'),
+      meta: {
+        title: '404 Page',
+        hidden: true,
+      },
+    },
   ],
 };
 
