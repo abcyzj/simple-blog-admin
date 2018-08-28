@@ -10,7 +10,7 @@
                 </el-select>
             </el-form-item>
         </el-form>
-        <mavon-editor v-model="articleContent" language="zh-CN" @save="onSave"></mavon-editor>
+        <mavon-editor v-model="articleContent" language="zh-CN" @save="onSave" :style="{minHeight: '500px'}"></mavon-editor>
     </div>
 </template>
 

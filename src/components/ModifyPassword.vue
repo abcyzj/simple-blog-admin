@@ -32,17 +32,17 @@ export default class ModifyPassword extends Vue {
 
     private formRules = {
         password: [
-            {required: true, message: '请输入原密码', trigger: 'change'},
+            {required: true, message: '请输入原密码'},
             {min: 6, message: '密码长度至少为6位', trigger: 'change'},
         ],
         newPassword1: [
-            {required: true, message: '请输入新密码', trigger: 'change'},
+            {required: true, message: '请输入新密码'},
             {min: 6, message: '密码长度至少为6位', trigger: 'change'}
         ],
         newPassword2: [
-            {required: true, message: '请再输入一次新密码', trigger: 'change'},
+            {required: true, message: '请再输入一次新密码'},
             {min: 6, message: '密码长度至少为6位', trigger: 'change'},
-            {validator: this.getValidator('newPassword2'), trigger: 'change'},
+            {validator: this.getValidator(), trigger: 'change'},
         ],
     };
 
@@ -63,7 +63,7 @@ export default class ModifyPassword extends Vue {
         form.validateField('newPassword2', (err) => {});
     }
 
-    private getValidator(inputField: string) {
+    private getValidator() {
         return (rule: any, value: string, callback: (err: Error) => void) => {
             const data = this.formData;
             const form = this.$refs.modifyPasswordForm as Form;

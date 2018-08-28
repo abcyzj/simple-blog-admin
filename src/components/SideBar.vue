@@ -24,7 +24,6 @@ export default class SideBar extends Vue {
     }
 
     private resolvePath(childPath: string) {
-        console.log(childPath);
         return path.resolve(this.basePath, childPath);
     }
 }
