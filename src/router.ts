@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Router, {RouterOptions, RouteConfig} from 'vue-router';
 import Login from '@/views/Login.vue';
 import Dashboard from '@/views/Dashboard.vue';
+import { getToken } from '@/utils/token';
 
 Vue.use(Router);
 
@@ -84,5 +85,14 @@ const routerOption: RouterOptions = {
 };
 
 const router = new Router(routerOption);
+
+const whiteList = ['/login'];
+router.beforeEach((to, from, next) => {
+  if (!getToken() && !whiteList.includes(to.path)) {
+    next({path: '/login'});
+  } else {
+    next();
+  }
+});
 
 export default router;

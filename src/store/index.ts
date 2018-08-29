@@ -32,7 +32,7 @@ const store: StoreOptions<State> = {
         throw new Error();
       }
 
-      if (res.data.result === 'success') {
+      if (res.data.success) {
         setToken(res.data.token);
         commit('SET_TOKEN', res.data.token);
         return true;
@@ -60,10 +60,7 @@ const store: StoreOptions<State> = {
 
       removeToken();
       commit('SET_TOKEN', null);
-      const res = await axios.post('/api/logout');
-      if (res.status !== 200) {
-        throw new Error();
-      }
+      removeToken();
     },
   },
 };

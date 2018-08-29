@@ -12,7 +12,7 @@
                         修改密码
                     </el-dropdown-item>
                 </router-link>
-                <el-dropdown-item>
+                <el-dropdown-item @click.native="logout">
                     退出
                 </el-dropdown-item>
             </el-dropdown-menu>
@@ -30,7 +30,12 @@ import Breadcrumb from './Breadcrumb.vue';
     },
 })
 export default class NavBar extends Vue {
-
+    private async logout() {
+        console.log('hei');
+        await this.$store.dispatch('logout');
+        this.$router.push('/login');
+        location.reload();
+    }
 }
 </script>
 

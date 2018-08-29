@@ -15,11 +15,14 @@
 
 <script lang="ts">
 import {Vue, Component} from 'vue-property-decorator';
+import {Action} from 'vuex-class';
 import {Form} from 'element-ui';
 import axios from 'axios';
 
 @Component
 export default class Login extends Vue {
+    @Action('login') actionLogin: (userInfo: any) => Promise<void>;
+
     private loginForm = {
         username: '',
         password: '',
@@ -36,8 +39,21 @@ export default class Login extends Vue {
     private async handleLogin() {
         const form: Form = this.$refs.loginForm as Form;
         if (await form.validate()) {
-            // TODO 登录相关
-            this.$router.push('/');
+            try {
+                if (await this.actionLogin(this.loginForm)) {
+                    this.$router.push('/');
+                } else {
+                    this.$message({
+                        type: 'error',
+                        message: '登录失败',
+                    });
+                }
+            } catch(err) {
+                this.$message({
+                    type: 'error',
+                    message: '网络错误',
+                });
+            }
         }
     }
 }

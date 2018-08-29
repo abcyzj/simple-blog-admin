@@ -20,25 +20,26 @@
 <script lang="ts">
 import {Vue, Component} from 'vue-property-decorator';
 import { MessageBoxData } from 'element-ui/types/message-box';
+import axios from 'axios';
 
 @Component
 export default class Category extends Vue {
     private tableData: any[] = [];
     private loading: boolean = false;
 
-    private created() {
-        this.tableData = [
-            {
-                name: '哈哈',
-                articleNumber: 10,
-                viewNumber: 50000,
-            },
-            {
-                name: '可惜',
-                articleNumber: 80,
-                viewNumber: 40000,
-            }
-        ];
+    private async mounted() {
+        await this.requestTableData();
+    }
+
+    private async requestTableData() {
+        this.loading = true;
+        const res = await axios.get(`/api/categoryTable`);
+        this.loading = false;
+        if (res.status !== 200) {
+            this.showNetworkError();
+            return;
+        }
+        this.tableData = res.data;
     }
     
     private async onEdit(index: number) {
@@ -54,7 +55,24 @@ export default class Category extends Vue {
             return;
         }
 
-        //TODO
+        this.loading = true;
+        let category = this.tableData[index];
+        const response = await axios.post('/api/setCategoryName', {id: category.id, name: res.value});
+        if (response.status !== 200) {
+            this.showNetworkError();
+            this.loading = false;
+            return;
+        } else if (!response.data.success) {
+            this.$message({
+                type: 'error',
+                message: '修改失败',
+            });
+            this.loading = false;
+            return;
+        }
+
+        category.name = res.value;
+        this.loading = false;
         this.$message({
             type: 'success',
             message: '修改成功',
@@ -73,10 +91,27 @@ export default class Category extends Vue {
             return;
         }
 
-        //TODO
+        this.loading = true;
+        let category = this.tableData[index];
+        const res = await axios.post('/api/deleteCategory', {id: category.id});
+        if (res.status !== 200) {
+            this.showNetworkError();
+            this.loading = false;
+            return;
+        } else if (!res.data.success) {
+            this.$message({
+                type: 'error',
+                message: '删除失败',
+            });
+            this.loading = false;
+            return;
+        }
+
+        this.tableData.splice(this.tableData.indexOf(category));
+        this.loading = false;
         this.$message({
             type: 'success',
-            message: `已删除"${this.tableData[index].name}"`,
+            message: `已删除"${category.name}"`,
         });
     }
 
@@ -94,28 +129,42 @@ export default class Category extends Vue {
             return;
         }
 
-        if (!this.checkRepeatedName(res.value)) {
+        if (this.checkRepeatedName(res.value)) {
             return;
         }
 
-        //TODO
+        this.loading = true;
+        const response = await axios.post('/api/addCategory', {name: res.value});
+        if (response.status !== 200) {
+            this.showNetworkError();
+            this.loading = false;
+            return;
+        } else if (!response.data.success) {
+            this.$message({
+                type: 'error',
+                message: '添加失败',
+            });
+            this.loading = false;
+            return;
+        }
+        this.loading = false;
         this.$message({
             type: 'success',
             message: `添加"${res.value}"成功`,
         });
+        await this.requestTableData();
     }
 
     private checkRepeatedName(name: string) {
         for (let row of this.tableData) {
             if (row.name === name) {
+                this.$message({
+                    type: 'error',
+                    message: `已有名为"${name}"的类别`,
+                });
                 return true;
             }
         }
-
-        this.$message({
-            type: 'error',
-            message: `已有名为"${name}的类别"`,
-        })
         return false;
     }
 
@@ -123,6 +172,13 @@ export default class Category extends Vue {
         this.$message({
             type: 'info',
             message: '已取消',
+        });
+    }
+
+    private showNetworkError() {
+        this.$message({
+            type: 'error',
+            message: '网络错误',
         });
     }
 }
