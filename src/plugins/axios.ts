@@ -11,15 +11,19 @@ axios.interceptors.request.use((config) => {
 });
 
 axios.interceptors.response.use((response) => {
-    if (response.status === 401) {
-        Message({
-            message: '请登录',
-            type: 'error',
-        });
-        store.dispatch('logout');
-        router.push('/login');
-        return Promise.reject('Authorization error');
-    } else {
         return response;
-    }
-});
+    },
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            Message({
+                message: '请登录',
+                type: 'error',
+            });
+            store.dispatch('logout');
+            router.push('/login');
+            return Promise.resolve();
+        } else {
+            return Promise.reject(error);
+        }
+    },
+);

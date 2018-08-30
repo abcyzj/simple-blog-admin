@@ -33,11 +33,24 @@ export const dashboardChildrenRroutes: RouteConfig[] = [
     },
   },
   {
-    path: 'articleEditor',
-    name: 'articleEditor',
+    path: 'editArticle/:articleId',
+    name: 'editArticle',
     component: () => import('@/components/ArticleEditor.vue'),
+    props: true,
     meta: {
       title: '编辑文章',
+      hidden: true,
+    },
+  },
+  {
+    path: 'newArticle',
+    name: 'newArticle',
+    component: () => import('@/components/ArticleEditor.vue'),
+    props: {
+      isNewArticle: true,
+    },
+    meta: {
+      title: '新文章',
       hidden: true,
     },
   },

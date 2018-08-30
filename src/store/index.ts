@@ -28,7 +28,7 @@ const store: StoreOptions<State> = {
   actions: {
     login: async ({commit}, userInfo: any) => {
       const res = await axios.post('/api/login', userInfo);
-      if (res.status !== 200) {
+      if (res.status !== 200 && res.status !== 401) {
         throw new Error();
       }
 
@@ -41,12 +41,8 @@ const store: StoreOptions<State> = {
       }
     },
     getUserInfo: async ({commit, state}) => {
-      if (!state.token) {
-        return;
-      }
-
       const res = await axios.get('/api/userInfo');
-      if (res.status !== 200) {
+      if (res.status !== 200 && res.status !== 401) {
         throw new Error();
       }
 

@@ -21,6 +21,7 @@
 import {Vue, Component} from 'vue-property-decorator';
 import { MessageBoxData } from 'element-ui/types/message-box';
 import axios from 'axios';
+import {showNetworkError} from '@/utils/popup';
 
 @Component
 export default class Category extends Vue {
@@ -35,8 +36,8 @@ export default class Category extends Vue {
         this.loading = true;
         const res = await axios.get(`/api/categoryTable`);
         this.loading = false;
-        if (res.status !== 200) {
-            this.showNetworkError();
+        if (res.status !== 200 && res.status !== 401) {
+            showNetworkError();
             return;
         }
         this.tableData = res.data;
@@ -59,7 +60,7 @@ export default class Category extends Vue {
         let category = this.tableData[index];
         const response = await axios.post('/api/setCategoryName', {id: category.id, name: res.value});
         if (response.status !== 200) {
-            this.showNetworkError();
+            showNetworkError();
             this.loading = false;
             return;
         } else if (!response.data.success) {
@@ -67,6 +68,11 @@ export default class Category extends Vue {
                 type: 'error',
                 message: '修改失败',
             });
+            this.loading = false;
+            return;
+        }
+
+        if (this.checkRepeatedName(res.value)) {
             this.loading = false;
             return;
         }
@@ -94,8 +100,8 @@ export default class Category extends Vue {
         this.loading = true;
         let category = this.tableData[index];
         const res = await axios.post('/api/deleteCategory', {id: category.id});
-        if (res.status !== 200) {
-            this.showNetworkError();
+        if (res.status !== 200 && res.status !== 401) {
+            showNetworkError();
             this.loading = false;
             return;
         } else if (!res.data.success) {
@@ -136,7 +142,7 @@ export default class Category extends Vue {
         this.loading = true;
         const response = await axios.post('/api/addCategory', {name: res.value});
         if (response.status !== 200) {
-            this.showNetworkError();
+            showNetworkError();
             this.loading = false;
             return;
         } else if (!response.data.success) {
@@ -172,13 +178,6 @@ export default class Category extends Vue {
         this.$message({
             type: 'info',
             message: '已取消',
-        });
-    }
-
-    private showNetworkError() {
-        this.$message({
-            type: 'error',
-            message: '网络错误',
         });
     }
 }

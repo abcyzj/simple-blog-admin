@@ -4,7 +4,7 @@
             <el-table-column prop="title" label="标题"></el-table-column>
             <el-table-column prop="date" label="修改日期" sortable></el-table-column>
             <el-table-column prop="viewNumber" label="阅读量" sortable></el-table-column>
-            <el-table-column prop="category" label="类别" :filters="filters" :filter-method="filterMethod"></el-table-column>
+            <el-table-column prop="categoryName" label="类别" :filters="filters" :filter-method="(value, row) => value === row.categoryName"></el-table-column>
             <el-table-column label="操作" fixed="right">
                 <template slot-scope="scope">
                     <el-button size="mini" @click="onEdit(scope.$index)" icon="el-icon-edit">编辑</el-button>
@@ -13,32 +13,20 @@
             </el-table-column>
         </el-table>
         <div class="article-table-btn-group">
-            <el-button type="primary" icon="el-icon-plus">新文章</el-button>
+            <el-button type="primary" icon="el-icon-plus" @click="$router.push({name: 'newArticle'})">新文章</el-button>
         </div>
     </div>
 </template>
 
 <script lang="ts">
 import {Vue, Component, Watch} from 'vue-property-decorator';
-import { setTimeout } from 'timers';
+import axios from 'axios';
+import {showNetworkError} from '@/utils/popup';
 
 @Component
 export default class ArticleTable extends Vue {
-    private tableData: any[] = [
-        {
-            title: '你好',
-            date: new Date(2018, 7, 5).toString(),
-            viewNumber: 20,
-            category: '某有',
-        },
-        {
-            title: '我草',
-            date: new Date(2018, 8, 4).toString(),
-            viewNumber: 30,
-            category: '邮码',
-        },
-    ];
-    private loading: boolean = true;
+    private tableData: any[] = [];
+    private loading: boolean = false;
 
     private filters: any[] = [];
 
@@ -55,21 +43,63 @@ export default class ArticleTable extends Vue {
         }
     }
 
-    private filterMethod(value: string, row: any) {
-        return value === row.category;
-    }
-
-    private created() {
-        //TODO get data
-        this.onTableDataChange();
+    private async mounted() {
+        await this.getTableData();
     }
 
     private onEdit(index: number) {
-        //TODO
+        this.$router.push({name: 'editArticle', params: this.tableData[index].id});
     }
 
-    private onDelete(index: number) {
-        //TODO
+    private async onDelete(index: number) {
+        const article = this.tableData[index];
+        try {
+            await this.$confirm(`此操作将永久删除${article.title}，是否继续？`, '警告', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning',
+            });
+        } catch (err) {
+            this.$message({
+                type: 'info',
+                message: '已取消',
+            });
+            return;
+        }
+
+        this.loading = true;
+        const res = await axios.post('/api/deleteArticle', {id: article.id});
+        this.loading = false;
+        if (res.status !== 200 && res.status !== 401) {
+            showNetworkError();
+            return;
+        }
+
+        if (res.data.success) {
+            this.$message({
+                type: 'success',
+                message: `已删除${article.title}`,
+            });
+        } else {
+            this.$message({
+                type: 'error',
+                message: `删除${article.title}失败`,
+            });
+        }
+
+        await this.getTableData();
+    }
+
+    private async getTableData() {
+        this.loading = true;
+        const res = await axios.get('/api/articleTable');
+        this.loading = false;
+        if (res.status !== 200 && res.status !== 401) {
+            showNetworkError();
+            return;
+        }
+
+        this.tableData = res.data;
     }
 }
 </script>
@@ -79,4 +109,3 @@ export default class ArticleTable extends Vue {
     margin: 1em 0;
 }
 </style>
-
