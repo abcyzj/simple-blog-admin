@@ -1,12 +1,12 @@
 <template>
-    <div class="editor-container">
+    <div class="editor-container" id="editorContainer">
         <el-form :inline="true" :model="formData" ref="editorForm">
             <el-form-item label="标题" prop="title" :rules="[{required: true, message: '请填写标题'}]">
                 <el-input v-model="formData.title" placeholder="标题"></el-input>
             </el-form-item>
-            <el-form-item label="类别" prop="category" :rules="[{required: true, message: '请选择类别'}]">
-                <el-select v-model="formData.category" placeholder="类别">
-                    <el-option v-for="category of categories" :value="category" :label="category"></el-option>
+            <el-form-item label="类别" prop="categoryId" :rules="[{required: true, message: '请选择类别'}]">
+                <el-select v-model="formData.categoryId" placeholder="类别">
+                    <el-option v-for="category of categories" :value="category.id" :label="category.name"></el-option>
                 </el-select>
             </el-form-item>
         </el-form>
@@ -19,6 +19,8 @@ import {Vue, Component, Prop} from 'vue-property-decorator';
 const MavonEditor = require('mavon-editor');
 import 'mavon-editor/dist/css/index.css';
 import { Form } from 'element-ui';
+import axios from 'axios';
+import { showNetworkError } from '@/utils/popup';
 
 @Component
 export default class ArticleEditor extends Vue {
@@ -29,10 +31,58 @@ export default class ArticleEditor extends Vue {
 
     private formData = {
         title: '',
-        category: '',
+        categoryId: '',
     };
 
-    private categories: string[] = ['你好', '我们'];
+    private categories: any[] = [];
+
+    private async created() {
+        await this.getCategoryData();
+        if (!this.isNewArticle) {
+            await this.getArticleInfo();
+        }
+    }
+
+    private async getCategoryData() {
+        const loadingComponent = this.$loading({
+            target: '#editorContainer',
+        });
+        const res = await axios.get('/api/categoryTable');
+        loadingComponent.close();
+        if (res.status !== 200 && res.status !== 401) {
+            showNetworkError();
+            return;
+        }
+
+        this.categories = res.data;
+    }
+
+    private async getArticleInfo() {
+        const loadingComponent = this.$loading({
+            target: '#editorContainer',
+        });
+        const res = await axios.get(`/api/adminArticleInfo/${this.articleId}`);
+        loadingComponent.close();
+
+        if (res.status === 404) {
+            this.$message({
+                type: 'error',
+                message: '该文章不存在',
+            });
+            this.$router.back();
+            return;
+        }
+        
+        if (res.status !== 200 && res.status !== 401) {
+            showNetworkError();
+            return;
+        }
+
+        const data = res.data;
+        this.formData.categoryId = data.categoryId;
+        this.formData.title = data.title;
+        this.articleContent = data.content;
+    }
 
     private async onSave(value: string, render: string) {
         const form = this.$refs.editorForm as Form;
@@ -40,11 +90,38 @@ export default class ArticleEditor extends Vue {
             return;
         }
 
-        //TODO
-        this.$message({
-            type: 'success',
-            message: '保存成功',
+        const postData: any = {
+            title: this.formData.title,
+            categoryId: this.formData.categoryId,
+            content: this.articleContent,
+            isNewArticle: this.isNewArticle,
+        };
+
+        if (!this.isNewArticle) {
+            postData.id = this.articleId;
+        }
+
+        const loadingComponent = this.$loading({
+            target: '#editorContainer',
         });
+        const res = await axios.post('/api/saveArticle', postData);
+        loadingComponent.close();
+        if (res.status !== 200 && res.status !== 401) {
+            showNetworkError();
+            return;
+        }
+
+        if (res.data.success) {
+            this.$message({
+                type: 'success',
+                message: '保存成功',
+            });
+        } else {
+            this.$message({
+                type: 'error',
+                message: '保存失败，请重试',
+            });
+        }
     }
 }
 </script>
