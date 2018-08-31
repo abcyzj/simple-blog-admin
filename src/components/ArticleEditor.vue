@@ -10,7 +10,7 @@
                 </el-select>
             </el-form-item>
         </el-form>
-        <mavon-editor v-model="articleContent" language="zh-CN" @save="onSave" :style="{minHeight: '500px'}"></mavon-editor>
+        <mavon-editor ref="mavonEditor" v-model="articleContent" language="zh-CN" @save="onSave" @imgAdd="uploadImg" :style="{minHeight: '500px'}"></mavon-editor>
     </div>
 </template>
 
@@ -122,6 +122,29 @@ export default class ArticleEditor extends Vue {
                 message: '保存失败，请重试',
             });
         }
+    }
+
+    private async uploadImg(pos: any, file: File) {
+        const formData = new FormData();
+        formData.append('image', file);
+        const res = await axios.post('/api/uploadImg', formData, {
+            headers: {'Content-type': 'multipart/form-data'},
+        });
+        if (res.status !== 200 && res.status !== 401) {
+            this.$message({
+                type: 'error',
+                message: '上传失败',
+            });
+            return;
+        }
+        
+        console.log(res.data.filename);
+        const editor = this.$refs['mavonEditor'] as any;
+        editor.$img2Url(pos, `/uploadImg/${res.data.filename}`);
+        this.$message({
+            type: 'success',
+            message: '上传成功',
+        });
     }
 }
 </script>
