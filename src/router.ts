@@ -69,7 +69,7 @@ const routerOption: RouterOptions = {
   routes: [
     {
       path: '/',
-      component: Dashboard,
+      component: () => import('@/views/Dashboard.vue'),
       name: 'dashboard',
       redirect: '/welcome',
       meta: {
@@ -80,7 +80,7 @@ const routerOption: RouterOptions = {
     },
     {
       path: '/login',
-      component: Login,
+      component: () => import('@/views/Login.vue'),
       meta: {
         title: '登录',
         hidden: true,
