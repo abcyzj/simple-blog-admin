@@ -6,8 +6,8 @@
             <el-table-column prop="viewNumber" label="阅读量" sortable></el-table-column>
             <el-table-column label="操作" fixed="right">
                 <template slot-scope="scope">
-                    <el-button size="mini" @click="onEdit(scope.$index)" icon="el-icon-edit">编辑</el-button>
-                    <el-button size="mini" type="danger" @click="onDelete(scope.$index)" icon="el-icon-delete">删除</el-button>
+                    <el-button size="mini" @click="onEdit(scope.row)" icon="el-icon-edit">编辑</el-button>
+                    <el-button size="mini" type="danger" @click="onDelete(scope.row)" icon="el-icon-delete">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -43,13 +43,13 @@ export default class Category extends Vue {
         this.tableData = res.data;
     }
 
-    private async onEdit(index: number) {
+    private async onEdit(row: any) {
         let res: MessageBoxData;
         try {
             res = await this.$prompt('输入新的类别名称', '编辑类别', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
-                inputValue: this.tableData[index].name,
+                inputValue: row.name,
             });
         } catch (__) {
             this.showCancelMessage();
@@ -57,8 +57,7 @@ export default class Category extends Vue {
         }
 
         this.loading = true;
-        const category = this.tableData[index];
-        const response = await axios.post('/api/setCategoryName', {id: category.id, name: res.value});
+        const response = await axios.post('/api/setCategoryName', {id: row.id, name: res.value});
         if (response.status !== 200) {
             showNetworkError();
             this.loading = false;
@@ -77,7 +76,7 @@ export default class Category extends Vue {
             return;
         }
 
-        category.name = res.value;
+        row.name = res.value;
         this.loading = false;
         this.$message({
             type: 'success',
@@ -85,9 +84,9 @@ export default class Category extends Vue {
         });
     }
 
-    private async onDelete(index: number) {
+    private async onDelete(row: any) {
         try {
-            await this.$confirm(`此操作将永久删除"${this.tableData[index].name}"，是否继续？`, '警告', {
+            await this.$confirm(`此操作将永久删除"${row.name}"，是否继续？`, '警告', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning',
@@ -98,8 +97,7 @@ export default class Category extends Vue {
         }
 
         this.loading = true;
-        const category = this.tableData[index];
-        const res = await axios.post('/api/deleteCategory', {id: category.id});
+        const res = await axios.post('/api/deleteCategory', {id: row.id});
         if (res.status !== 200 && res.status !== 401) {
             showNetworkError();
             this.loading = false;
@@ -113,11 +111,11 @@ export default class Category extends Vue {
             return;
         }
 
-        this.tableData.splice(this.tableData.indexOf(category));
+        this.tableData.splice(this.tableData.findIndex((item) => item.id === row.id));
         this.loading = false;
         this.$message({
             type: 'success',
-            message: `已删除"${category.name}"`,
+            message: `已删除"${row.name}"`,
         });
     }
 

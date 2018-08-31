@@ -8,8 +8,8 @@
             <el-table-column prop="role" label="角色"></el-table-column>
             <el-table-column label="操作" fixed="right">
                 <template slot-scope="scope">
-                    <el-button size="mini" @click="onEdit(scope.$index)" icon="el-icon-edit">编辑</el-button>
-                    <el-button size="mini" type="danger" @click="onDelete(scope.$index)" icon="el-icon-delete">删除</el-button>
+                    <el-button size="mini" @click="onEdit(scope.row)" icon="el-icon-edit">编辑</el-button>
+                    <el-button size="mini" type="danger" @click="onDelete(scope.row)" icon="el-icon-delete">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -38,10 +38,10 @@ export default class ArticleTable extends Vue {
     private onTableDataChange() {
         this.filters = [];
         for (const data of this.tableData) {
-            if (this.filters.findIndex((value, ind, obj) => value === data.category) === -1) {
+            if (this.filters.findIndex((item, ind, obj) => item.value === data.categoryName) === -1) {
                 this.filters.push({
-                    text: data.category,
-                    value: data.category,
+                    text: data.categoryName,
+                    value: data.categoryName,
                 });
             }
         }
@@ -51,14 +51,13 @@ export default class ArticleTable extends Vue {
         await this.getTableData();
     }
 
-    private onEdit(index: number) {
-        this.$router.push({name: 'editArticle', params: {articleId: this.tableData[index].id}});
+    private onEdit(row: any) {
+        this.$router.push({name: 'editArticle', params: {articleId: row.id}});
     }
 
-    private async onDelete(index: number) {
-        const article = this.tableData[index];
+    private async onDelete(row: any) {
         try {
-            await this.$confirm(`此操作将永久删除"${article.title}"，是否继续？`, '警告', {
+            await this.$confirm(`此操作将永久删除"${row.title}"，是否继续？`, '警告', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning',
@@ -72,7 +71,7 @@ export default class ArticleTable extends Vue {
         }
 
         this.loading = true;
-        const res = await axios.post('/api/deleteArticle', {id: article.id});
+        const res = await axios.post('/api/deleteArticle', {id: row.id});
         this.loading = false;
         if (res.status !== 200 && res.status !== 401) {
             showNetworkError();
@@ -82,12 +81,12 @@ export default class ArticleTable extends Vue {
         if (res.data.success) {
             this.$message({
                 type: 'success',
-                message: `已删除"${article.title}"`,
+                message: `已删除"${row.title}"`,
             });
         } else {
             this.$message({
                 type: 'error',
-                message: `删除"${article.title}失败"`,
+                message: `删除"${row.title}失败"`,
             });
         }
 
