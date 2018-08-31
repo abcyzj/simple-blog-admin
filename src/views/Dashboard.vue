@@ -27,7 +27,7 @@ export default class Dashboard extends Vue {
     private async mounted() {
         try {
             await this.$store.dispatch('getUserInfo');
-        } catch(err) {
+        } catch (err) {
             this.$message({
                 type: 'error',
                 message: '网络错误',

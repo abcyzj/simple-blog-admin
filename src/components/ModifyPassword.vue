@@ -39,7 +39,7 @@ export default class ModifyPassword extends Vue {
         ],
         newPassword1: [
             {required: true, message: '请输入新密码'},
-            {min: 6, message: '密码长度至少为6位', trigger: 'change'}
+            {min: 6, message: '密码长度至少为6位', trigger: 'change'},
         ],
         newPassword2: [
             {required: true, message: '请再输入一次新密码'},
@@ -49,7 +49,10 @@ export default class ModifyPassword extends Vue {
     };
 
     private async submit() {
-        const res = await axios.post('/api/setPassword', {password: this.formData.password, newPassword: this.formData.newPassword1});
+        const res = await axios.post('/api/setPassword', {
+            password: this.formData.password,
+            newPassword: this.formData.newPassword1,
+        });
         if (res.status !== 200 && res.status !== 401) {
             showNetworkError();
             return;

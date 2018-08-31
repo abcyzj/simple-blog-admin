@@ -72,7 +72,7 @@ export default class ArticleEditor extends Vue {
             this.$router.back();
             return;
         }
-        
+
         if (res.status !== 200 && res.status !== 401) {
             showNetworkError();
             return;
@@ -137,9 +137,8 @@ export default class ArticleEditor extends Vue {
             });
             return;
         }
-        
-        console.log(res.data.filename);
-        const editor = this.$refs['mavonEditor'] as any;
+
+        const editor = this.$refs.mavonEditor as any;
         editor.$img2Url(pos, `/uploadImg/${res.data.filename}`);
         this.$message({
             type: 'success',

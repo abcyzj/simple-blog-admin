@@ -101,6 +101,11 @@ const router = new Router(routerOption);
 
 const whiteList = ['/login'];
 router.beforeEach((to, from, next) => {
+  if (to.meta.title) {
+    document.title = `Simple Blog Admin - ${to.meta.title}`;
+  } else {
+    document.title = `Simple Blog Admin`;
+  }
   if (!getToken() && !whiteList.includes(to.path)) {
     next({path: '/login'});
   } else {

@@ -37,7 +37,7 @@ export default class ArticleTable extends Vue {
     @Watch('tableData')
     private onTableDataChange() {
         this.filters = [];
-        for (let data of this.tableData) {
+        for (const data of this.tableData) {
             if (this.filters.findIndex((value, ind, obj) => value === data.category) === -1) {
                 this.filters.push({
                     text: data.category,
@@ -114,7 +114,7 @@ export default class ArticleTable extends Vue {
         this.loading = true;
         const res = await axios.post('/api/setAboutArticle', {id: this.currentRow.id});
         this.loading = false;
-        
+
         if (res.status !== 200 && res.status !== 401) {
             showNetworkError();
             return;

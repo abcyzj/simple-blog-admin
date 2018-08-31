@@ -42,7 +42,7 @@ export default class Category extends Vue {
         }
         this.tableData = res.data;
     }
-    
+
     private async onEdit(index: number) {
         let res: MessageBoxData;
         try {
@@ -51,13 +51,13 @@ export default class Category extends Vue {
                 cancelButtonText: '取消',
                 inputValue: this.tableData[index].name,
             });
-        } catch(__) {
+        } catch (__) {
             this.showCancelMessage();
             return;
         }
 
         this.loading = true;
-        let category = this.tableData[index];
+        const category = this.tableData[index];
         const response = await axios.post('/api/setCategoryName', {id: category.id, name: res.value});
         if (response.status !== 200) {
             showNetworkError();
@@ -92,13 +92,13 @@ export default class Category extends Vue {
                 cancelButtonText: '取消',
                 type: 'warning',
             });
-        } catch(__) {
+        } catch (__) {
             this.showCancelMessage();
             return;
         }
 
         this.loading = true;
-        let category = this.tableData[index];
+        const category = this.tableData[index];
         const res = await axios.post('/api/deleteCategory', {id: category.id});
         if (res.status !== 200 && res.status !== 401) {
             showNetworkError();
@@ -130,7 +130,7 @@ export default class Category extends Vue {
                 inputPattern: /^.{1,4}$/,
                 inputErrorMessage: '类别名称长度应在1~4',
             });
-        } catch(__) {
+        } catch (__) {
             this.showCancelMessage();
             return;
         }
@@ -162,7 +162,7 @@ export default class Category extends Vue {
     }
 
     private checkRepeatedName(name: string) {
-        for (let row of this.tableData) {
+        for (const row of this.tableData) {
             if (row.name === name) {
                 this.$message({
                     type: 'error',

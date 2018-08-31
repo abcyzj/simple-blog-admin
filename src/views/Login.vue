@@ -21,7 +21,7 @@ import axios from 'axios';
 
 @Component
 export default class Login extends Vue {
-    @Action('login') actionLogin: (userInfo: any) => Promise<void>;
+    @Action('login') private actionLogin: (userInfo: any) => Promise<void>;
 
     private loginForm = {
         username: '',
@@ -48,7 +48,7 @@ export default class Login extends Vue {
                         message: '登录失败',
                     });
                 }
-            } catch(err) {
+            } catch (err) {
                 this.$message({
                     type: 'error',
                     message: '网络错误',
