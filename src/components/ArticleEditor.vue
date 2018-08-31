@@ -130,15 +130,16 @@ export default class ArticleEditor extends Vue {
         const res = await axios.post('/api/uploadImg', formData, {
             headers: {'Content-type': 'multipart/form-data'},
         });
+        const editor = this.$refs.mavonEditor as any;
         if (res.status !== 200 && res.status !== 401) {
             this.$message({
                 type: 'error',
                 message: '上传失败',
             });
+            editor.$refs.toolbar_left.$imgDelByFilename(file.name);
             return;
         }
 
-        const editor = this.$refs.mavonEditor as any;
         editor.$img2Url(pos, `/uploadImg/${res.data.filename}`);
         this.$message({
             type: 'success',
