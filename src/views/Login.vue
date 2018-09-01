@@ -9,7 +9,8 @@
                 <el-input v-model="loginForm.password" type="password"></el-input>
             </el-form-item>
         </el-form>
-        <el-button :style="{width: '100%'}" type="primary" :round="true" @click="handleLogin">登录</el-button>
+        <vue-recaptcha :style="{marginBottom: '10px'}" sitekey="6LeKqW0UAAAAAGn0EcPsOSIJYZXnjzsTeU9JzEBU" @verify="onRecaptchaVerify" @expired="onRecaptchaExpired"></vue-recaptcha>
+        <el-button :style="{width: '100%'}" type="primary" :round="true" @click="handleLogin" :disabled="true" ref="loginButton">登录</el-button>
     </div>
 </template>
 
@@ -18,14 +19,19 @@ import {Vue, Component} from 'vue-property-decorator';
 import {Action} from 'vuex-class';
 import {Form} from 'element-ui';
 import axios from 'axios';
+import VueRecaptcha from 'vue-recaptcha';
+import { ElButton } from 'element-ui/types/button';
 
-@Component
+@Component({
+    components: {VueRecaptcha},
+})
 export default class Login extends Vue {
     @Action('login') private actionLogin: (userInfo: any) => Promise<void>;
 
     private loginForm = {
         username: '',
         password: '',
+        recaptchaResponse: '',
     };
 
     private loginRules = {
@@ -35,6 +41,14 @@ export default class Login extends Vue {
             {min: 6, message: '密码长度不能短于6位', trigger: 'change'},
         ],
     };
+
+    private async mounted() {
+        const recaptchaScript = document.createElement('script');
+        recaptchaScript.setAttribute('src', 'https://www.google.com/recaptcha/api.js?onload=vueRecaptchaApiLoaded&render=explicit');
+        recaptchaScript.setAttribute('async', 'async');
+        recaptchaScript.setAttribute('defer', 'defer');
+        document.head.appendChild(recaptchaScript);
+    }
 
     private async handleLogin() {
         const form: Form = this.$refs.loginForm as Form;
@@ -55,6 +69,17 @@ export default class Login extends Vue {
                 });
             }
         }
+    }
+
+    private onRecaptchaVerify(response: string) {
+        const loginButton = this.$refs.loginButton as ElButton;
+        loginButton.disabled = false;
+        this.loginForm.recaptchaResponse = response;
+    }
+
+    private onRecaptchaExpired() {
+        const loginButton = this.$refs.loginButton as ElButton;
+        loginButton.disabled = true;
     }
 }
 </script>
